@@ -1,3 +1,4 @@
+
 library(scholar)
 library(tidyverse)
 library(lubridate)
@@ -6,7 +7,7 @@ library(lubridate)
 #Mauricio: pPYRgUAAAAAJ
 #Nadeeka: iiDz-skAAAAJ
 #Jo Devlin: b_0bnnoAAAAJ
-id <- "b_0bnnoAAAAJ"
+id <- "OmIonF8AAAAJ"
 nToday <- yday(Sys.time())
 ct <- get_citation_history(id)
 ct$citesPerMonth <- ct$cites/12
@@ -16,7 +17,7 @@ ct$citesPerYear <- ct$cites
 ct$citesPerYear[finalRow] <- ct$citesPerYear[finalRow]/nToday * 365
 
 ct
- ct <- rbind(c(2006,0,0,0), ct)
+# ct <- rbind(c(2006,0,0,0), ct)
 
 p <- get_publications(id)
 
@@ -24,13 +25,21 @@ p <- p[complete.cases(p$year),]
 #ct <- ct[1:13,1:4]
 p
 
-papersPerYear <- as.data.frame(table((p$year)))
+papersPerYear <- as.data.frame(x = table(p$year),
+                                         stringsAsFactors = FALSE
+                               )
+papersPerYear <- rename(papersPerYear, "year" = "Var1")
+papersPerYear$year <- as.numeric(as.character(papersPerYear$year))
+ct <- full_join(x = ct, y = papersPerYear, by = c("year"))
+ct <- arrange(ct, year)
 
-papersPerYear$sum <- cumsum(papersPerYear[,2])
+ct[is.na(ct)] <- 0
+  
+ct$sum <- cumsum(ct$Freq)
 
 papersPerYear
 #rbind(papersPerYear, c(as.factor(2019),0,81))
-ct$papersPerYear <- papersPerYear$Freq
+# ct$papersPerYear <- papersPerYear$Freq
 #ct$papersPerYear <- papersPerYear$Freq[2:9]
 ct
 
