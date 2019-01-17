@@ -4,18 +4,25 @@
 #
 
 
+
+#list of packages required
+list.of.packages <- c("tidyverse", "scholar")
+
+#checking missing packages from list
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+
+#install missing ones
+if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+
 ### Load packages
-library(shiny)
 library(scholar)
 library(tidyverse)
-library(lubridate)
+
 
 
 
 # Define UI for application
 ui <- fluidPage(
-  
-  # remove(input, tmp, nanodat,meltPlot,plotVals)
   
    # Application title
    titlePanel("ScholarPlot: visualise your research output"),
@@ -29,7 +36,7 @@ ui <- fluidPage(
             actionButton("go", "Go"),
             uiOutput("slider"),
             
-            downloadButton(outputId = "downloadplot", "Save image"),
+            downloadButton(outputId = "downloadPlot", "Save image"),
             downloadButton(outputId = "downloadtable", "Save table"),
             width = 2,
             NULL
@@ -118,7 +125,7 @@ server <- function(input, output) {
     papersPerYear <- as.data.frame(x = table(p$year),
                                    stringsAsFactors = FALSE
     )
-    papersPerYear <- rename(papersPerYear, "year" = "Var1")
+    papersPerYear <- dplyr::rename(papersPerYear, "year" = "Var1")
     papersPerYear$year <- as.numeric(as.character(papersPerYear$year))
     ct <- full_join(x = ct, y = papersPerYear, by = c("year"))
     ct <- arrange(ct, year)
@@ -163,17 +170,41 @@ server <- function(input, output) {
       theme(legend.title = element_text(face = "bold", size = 15)) +
       theme(legend.text = element_text(size = 14)) +
       theme(axis.title.x = element_text(face = "bold", size = 15, colour = "Black"),
-            axis.text.x = element_text(face = "bold", size = 12, colour = "Black")) +
+            axis.text.x = element_text(face = "bold", size = 12, colour = "Black", angle = 90, vjust = 0.5)) +
       theme(axis.title.y = element_text(face = "bold",
                                         size = 15, colour = "Black",
                                         margin = margin(t = 0, r = 10, b = 0, l = 10)),
             axis.title.y.right = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10)),
             axis.text.y = element_text(face = "bold", size = 12, colour = "Black")) +
+      scale_x_continuous(breaks = c(seq(from = min(plotdata$year), to = max(plotdata$year, by = 1)))) + 
       scale_y_continuous(sec.axis = sec_axis(trans = ~. / transform, name = "Annual Papers")) + 
       #scale_colour_manual("", breaks = c("Citations_per_year", "Projected_citations"), values = c("Citations_per_year" = "Cyan", "Projected_citations" = "Purple")) +
       NULL
   }
   
+  # output$downloadplot <- downloadHandler(
+  #   filename <- function() {
+  #     paste0('CitationPlot', 'png', sep = ".")
+  #   },
+  #   content <- function(file) {
+  #     png(filename = file, width = 1000, height = 800)
+  #     
+  #     plotInput()
+  #     
+  #     print(ImageSave)
+  #     
+  #     dev.off()
+  #   },
+  #   contentType = "image/png"
+  # )
+  
+  output$downloadPlot <- downloadHandler(
+    filename = function() { paste("CitationPlot", '.jpeg', sep='') },
+    content = function(file) {
+      ggsave(file, plot = plotInput(), device = "jpeg")
+    }
+  )
+    
   output$CitationPlot <- renderPlot(height = 600, {
     plotInput()
   })
