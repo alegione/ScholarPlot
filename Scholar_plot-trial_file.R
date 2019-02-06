@@ -76,6 +76,12 @@ transform <- round(x =max(ct$cites)/max(papersPerYear$Freq) * (2/3), digits = 0)
 ggplot(ct, aes(year, citesPerMonth)) + geom_line() + geom_point()
 
 p <- get_publications(id)
+p$ImpactFactor <- get_impactfactor(p$journal, max.distance = 0.20)$ImpactFactor
+p$citesPerYear <- p$cites/(2019-p$year+1)
+p$PaperScore <- p$citesPerYear+p$ImpactFactor
+CiteTable <- filter(p, PaperScore > 0) %>% arrange(desc(PaperScore)) %>% select(-cid, -pubid)
+CumulativeImpact <- sum(CiteTable$ImpactFactor)
+
 papersPerYear <- as.data.frame(table((p$year)))
 papersPerYear$sum <- cumsum(papersPerYear[,2])
 
@@ -134,3 +140,6 @@ for (i in 1:nrow(p)) {
     geom_point(size=3, color='firebrick') +
     ggtitle(p$title[i])
 }
+
+
+
