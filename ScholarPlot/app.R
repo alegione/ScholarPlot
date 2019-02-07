@@ -229,11 +229,12 @@ server <- function(input, output) {
     papersTable$PaperScore <- papersTable$citesPerYear+papersTable$ImpactFactor
     papersTable$cites <- sprintf('%1i', papersTable$cites)
     papersTable$year <- sprintf('%1i', papersTable$year)
-    (CiteTable <- filter(papersTable, PaperScore > 0) %>%
+    CiteTable <- filter(papersTable, PaperScore > 0) %>%
         arrange(desc(PaperScore)) %>%
-        select(-cid, -pubid)) %>%
-
-        plyr::rename(c("title" = "Title", "author" = "Authors", "journal" = "Journal", "number" = "Issue", "cites" = "Citations", "year" = "Year", "ImpactFactor" = "Impact Factor", "citesPerYear" = "Annual Citations", "PaperScore" = "Paper Score"))
+        select(-cid, -pubid)
+    (CiteTable <- add_column(.data = CiteTable, Rank = 1:nrow(CiteTable), .before = "title") %>%
+        plyr::rename(c("Rank" = "Rank", "title" = "Title", "author" = "Authors", "journal" = "Journal", "number" = "Issue", "cites" = "Citations", "year" = "Year", "ImpactFactor" = "Impact Factor", "citesPerYear" = "Annual Citations", "PaperScore" = "Paper Score"))
+    )
       })
   
   
