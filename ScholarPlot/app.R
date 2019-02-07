@@ -59,7 +59,7 @@ ui <- fluidPage(
                br(),
                br(),
                br(),
-               #tableOutput(outputId = "MetricsTable")
+               tableOutput(outputId = "MetricsTable"),
                #textOutput(outputId = "TextTest"),
                NULL
              )
@@ -96,22 +96,31 @@ server <- function(input, output) {
   #   }
   # )
 
-  id <- eventReactive(input$go,{
+  getid <- eventReactive(input$go,{
     (input$scholarId)
   })
   
   citations <- reactive({
     print("get citations")
-    get_citation_history(id())
+    get_citation_history(getid())
 
   })
 
   papers <- reactive({
     print("get publications")
     
-    get_publications(id())
+    get_publications(getid())
   })
-
+  
+  
+  details <- reactive({
+    tmp <- get_profile(getid())
+    (c(tmp$name, tmp$affiliation, tmp$total_cites, tmp$h_index, tmp$i10_index))
+  })
+  
+  
+  
+  
   dat <- reactive({
     print("get data")
 
@@ -151,7 +160,7 @@ server <- function(input, output) {
     
     plotdata <- dat()
     plotdata <- filter(plotdata, year >= input$yearRange[1], year <= input$yearRange[2])
-    
+    titleInfo <- details()
     
     transform <- round(x = max(plotdata$cites)/max(plotdata$Freq) * (2/3), digits = 0)
     
@@ -178,6 +187,7 @@ server <- function(input, output) {
             axis.text.y = element_text(face = "bold", size = 12, colour = "Black")) +
       scale_x_continuous(breaks = c(seq(from = min(plotdata$year), to = max(plotdata$year, by = 1)))) + 
       scale_y_continuous(sec.axis = sec_axis(trans = ~. / transform, name = "Annual Papers")) + 
+      ggtitle(label = paste0(titleInfo[1], " - Citations: ", titleInfo[3], ", h-index: ", titleInfo[4], ", i10-index: ", titleInfo[5]), subtitle = paste("Data accessed:", format(Sys.Date(), "%b %d %Y"))) +
       #scale_colour_manual("", breaks = c("Citations_per_year", "Projected_citations"), values = c("Citations_per_year" = "Cyan", "Projected_citations" = "Purple")) +
       NULL
   }
@@ -209,7 +219,35 @@ server <- function(input, output) {
     plotInput()
   })
     
+  Generate_MetricsTable <- reactive({
+    if (is.null(dat())) {
+      return()
+    }
+    papersTable <- papers()
+    papersTable$ImpactFactor <- get_impactfactor(papersTable$journal, max.distance = 0.20)$ImpactFactor
+    papersTable$citesPerYear <- papersTable$cites/(2019-papersTable$year+1)
+    papersTable$PaperScore <- papersTable$citesPerYear+papersTable$ImpactFactor
+    papersTable$cites <- sprintf('%1i', papersTable$cites)
+    papersTable$year <- sprintf('%1i', papersTable$year)
+    (CiteTable <- filter(papersTable, PaperScore > 0) %>%
+        arrange(desc(PaperScore)) %>%
+        select(-cid, -pubid)) %>%
+
+        plyr::rename(c("title" = "Title", "author" = "Authors", "journal" = "Journal", "number" = "Issue", "cites" = "Citations", "year" = "Year", "ImpactFactor" = "Impact Factor", "citesPerYear" = "Annual Citations", "PaperScore" = "Paper Score"))
+      })
   
+  
+  output$MetricsTable <- renderTable({
+    Generate_MetricsTable()
+  })
+  
+  output$downloadtable <- downloadHandler(
+    filename = function() { paste0('MetricsTable', '.tsv', sep = "") },
+    content = function(file) {
+      write.table(x = Generate_MetricsTable(), file = file, row.names = FALSE, sep = "\t")
+    },
+    contentType = "text/csv"
+  )
  
 }
 
