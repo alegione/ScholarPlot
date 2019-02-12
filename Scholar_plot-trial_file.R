@@ -6,8 +6,11 @@ library(lubridate)
 #Alistair: OmIonF8AAAAJ
 #Mauricio: pPYRgUAAAAAJ
 #Nadeeka: iiDz-skAAAAJ
-#Jo Devlin: b_0bnnoAAAAJ
-id <- "OmIonF8AAAAJ"
+#Jo D: b_0bnnoAAAAJ
+#Paola: 4bkOEhEAAAAJ
+#Glenn: jg0S8-wAAAAJ
+#Simon: z9_YatsAAAAJ
+id <- "jg0S8-wAAAAJ"
 nToday <- yday(Sys.time())
 ct <- get_citation_history(id)
 ct$citesPerMonth <- ct$cites/12
@@ -100,6 +103,12 @@ transform <- round(x =max(ct$cites)/max(ct$Freq) * (2/3), digits = 0)
 ggplot(ct, aes(year, citesPerMonth)) + geom_line() + geom_point()
 
 p <- get_publications(id)
+p$ImpactFactor <- get_impactfactor(p$journal, max.distance = 0.20)$ImpactFactor
+p$citesPerYear <- p$cites/(2019-p$year+1)
+p$PaperScore <- p$citesPerYear+p$ImpactFactor
+CiteTable <- filter(p, PaperScore > 0) %>% arrange(desc(PaperScore)) %>% select(-cid, -pubid)
+CumulativeImpact <- sum(CiteTable$ImpactFactor)
+
 papersPerYear <- as.data.frame(table((p$year)))
 papersPerYear$sum <- cumsum(papersPerYear[,2])
 
@@ -158,3 +167,6 @@ for (i in 1:nrow(p)) {
     geom_point(size=3, color='firebrick') +
     ggtitle(p$title[i])
 }
+
+
+
