@@ -46,10 +46,10 @@ ct
 
 ctMinus <- ct[1:nrow(ct)-1,] #saves citations less the current year to remove small values
 
-transform <- round(x =max(ct$cites)/max(papersPerYear$Freq) * (2/3), digits = 0)
+transform <- round(x =max(ct$cites)/max(ct$Freq) * (2/3), digits = 0)
 
 (citationsPlot <- ggplot(data = ct) +
-  geom_col(aes(x = year, y = papersPerYear * transform), fill = "White", colour = "black", size = 1) + 
+  geom_col(aes(x = year, y = Freq * transform), fill = "White", colour = "black", size = 1) + 
 # geom_line(aes(x = year, y = citesPerYear), size = 2, colour = "Purple", linetype = 2) +
   geom_line(aes(x = year, y = cites), size = 2, colour = "Grey") + 
   geom_point(aes(x = year, y = cites), size = 4, colour = "Black") +
@@ -72,7 +72,31 @@ transform <- round(x =max(ct$cites)/max(papersPerYear$Freq) * (2/3), digits = 0)
     #scale_colour_manual("", breaks = c("Citations_per_year", "Projected_citations"), values = c("Citations_per_year" = "Cyan", "Projected_citations" = "Purple")) +
     NULL
 )
-
+(citationsPlot <- ggplot(data = ct) +
+  geom_col(aes(x = year, y = Freq * transform), fill = "White", colour = "black", size = 1) + 
+    # geom_line(aes(x = year, y = citesPerYear), size = 2, colour = "Purple", linetype = 2) +
+    geom_line(aes(x = year, y = cites), size = 2, colour = "Grey") + 
+    geom_point(aes(x = year, y = cites), size = 4, colour = "Black") +
+    #  geom_point(aes(x = year, y = citesPerYear), size = 4, colour = "Black") +
+    ylab("Annual Citations") + 
+    #  ggtitle("Dr Alistair Legione") +
+    xlab("Year") +
+    theme_bw() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 15)) +
+    theme(legend.title = element_text(face = "bold", size = 15)) +
+    theme(legend.text = element_text(size = 14)) +
+    theme(axis.title.x = element_text(face = "bold", size = 15, colour = "Black"),
+          axis.text.x = element_text(face = "bold", size = 12, colour = "Black", angle = 90, vjust = 0.5)) +
+    theme(axis.title.y = element_text(face = "bold",
+                                      size = 15, colour = "Black",
+                                      margin = margin(t = 0, r = 10, b = 0, l = 10)),
+          axis.title.y.right = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10)),
+          axis.text.y = element_text(face = "bold", size = 12, colour = "Black")) +
+    scale_x_continuous(breaks = c(seq(from = min(ct$year), to = max(ct$year, by = 1)))) + 
+    scale_y_continuous(sec.axis = sec_axis(trans = ~. / transform, name = "Annual Papers")) + 
+    #scale_colour_manual("", breaks = c("Citations_per_year", "Projected_citations"), values = c("Citations_per_year" = "Cyan", "Projected_citations" = "Purple")) +
+    NULL
+)
 ggplot(ct, aes(year, citesPerMonth)) + geom_line() + geom_point()
 
 p <- get_publications(id)

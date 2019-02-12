@@ -201,7 +201,7 @@ server <- function(input, output) {
   output$downloadPlot <- downloadHandler(
     filename = function() { paste("CitationPlot", '.jpeg', sep='') },
     content = function(file) {
-      ggsave(file, plot = plotInput(), device = "jpeg")
+      ggsave(file, plot = plotInput(), device = "jpeg", width = 11.69, height = 8.27)
     }
   )
     
