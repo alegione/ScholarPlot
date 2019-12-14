@@ -17,8 +17,8 @@ if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
 ### Load packages
 library(scholar)
 library(tidyverse)
-
-
+library(xml2)
+library(rvest)
 
 
 # Define UI for application
@@ -65,7 +65,27 @@ ui <- fluidPage(
              )
           )
         )
-      )
+      ),
+     tabPanel(title = "WordCloud",
+              sidebarLayout(
+                sidebarPanel(
+                  textInput(inputId = "scholarId", label = "Enter GoogleScholar ID", placeholder = "OmIonF8AAAAJ", value = "OmIonF8AAAAJ"),
+                  actionButton("go", "Go"),
+                  uiOutput("slider"),
+                  
+                  downloadButton(outputId = "downloadCloud", "Save image"),
+                  width = 2,
+                  NULL
+                ),
+                # Show a plot of the generated wordcloud
+                mainPanel(
+                  verticalLayout(
+                    plotOutput(outputId = "WordCloudPlot")
+                  )
+                )
+              )
+     )
+     
    )
 )
    
@@ -249,7 +269,13 @@ server <- function(input, output) {
     },
     contentType = "text/csv"
   )
- 
+  
+  Generate_WordCloud <- reactive({
+    
+  })
+  output$WordcloudPlot <- renderPlot(height = 600, {
+    plotInput()
+  })
 }
 
 # Run the application 
