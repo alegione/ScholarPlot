@@ -10,7 +10,7 @@ library(lubridate)
 #Paola: 4bkOEhEAAAAJ
 #Glenn: jg0S8-wAAAAJ
 #Simon: z9_YatsAAAAJ
-id <- "jg0S8-wAAAAJ"
+id <- "4bkOEhEAAAAJ"
 nToday <- yday(Sys.time())
 ct <- get_citation_history(id)
 ct$citesPerMonth <- ct$cites/12

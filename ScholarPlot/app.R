@@ -32,7 +32,10 @@ ui <- fluidPage(
      tabPanel(title = "Citations", 
        sidebarLayout(
           sidebarPanel(
-            textInput(inputId = "scholarId", label = "Enter GoogleScholar ID", placeholder = "OmIonF8AAAAJ", value = "OmIonF8AAAAJ"),
+            textInput(inputId = "scholarId",
+                      label = "Enter GoogleScholar ID",
+                      placeholder = "OmIonF8AAAAJ",
+                      value = "OmIonF8AAAAJ"),
             actionButton("go", "Go"),
             uiOutput("slider"),
             
@@ -225,7 +228,8 @@ server <- function(input, output) {
     }
     papersTable <- papers()
     papersTable$ImpactFactor <- get_impactfactor(papersTable$journal, max.distance = 0.20)$ImpactFactor
-    papersTable$citesPerYear <- papersTable$cites/(2019-papersTable$year+1)
+    # NEED TO FIX FORMULA FOR LESS THAN OR EQUAL TO ZERO
+    papersTable$citesPerYear <- papersTable$cites/(as.numeric(format(Sys.Date(), "%Y"))-papersTable$year)
     papersTable$PaperScore <- papersTable$citesPerYear+papersTable$ImpactFactor
     papersTable$cites <- sprintf('%1i', papersTable$cites)
     papersTable$year <- sprintf('%1i', papersTable$year)
