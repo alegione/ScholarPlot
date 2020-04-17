@@ -1,0 +1,14 @@
+Package: ScholarPlot
+Type: Package
+Title: Visualize google scholar output
+Version: 1.0.0
+URL: https://github.com/alegione/ScholarPlot
+BugReports: https://github.com/alegione/ScholarPlot/issues
+Authors@R: person("Alistair R", "Legione", email = "legionea@unimelb.edu.au", role = c("aut", "cre"))
+Description: Shiny app to visualize output from google scholar R package.
+Imports: tidyverse, scholar
+License: GPL-3
+LazyData: TRUE
+RoxygenNote: 6.1.1
+VignetteBuilder: knitr
+NeedsCompilation: no
