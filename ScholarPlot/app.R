@@ -68,26 +68,26 @@ ui <- fluidPage(
              )
           )
         )
-      ),
-     tabPanel(title = "WordCloud",
-              sidebarLayout(
-                sidebarPanel(
-                  textInput(inputId = "scholarId", label = "Enter GoogleScholar ID", placeholder = "OmIonF8AAAAJ", value = "OmIonF8AAAAJ"),
-                  actionButton("go", "Go"),
-                  uiOutput("slider"),
-                  
-                  downloadButton(outputId = "downloadCloud", "Save image"),
-                  width = 2,
-                  NULL
-                ),
-                # Show a plot of the generated wordcloud
-                mainPanel(
-                  verticalLayout(
-                    plotOutput(outputId = "WordCloudPlot")
-                  )
-                )
-              )
-     )
+      )#,
+     # tabPanel(title = "WordCloud",
+     #          sidebarLayout(
+     #            sidebarPanel(
+     #              textInput(inputId = "scholarId", label = "Enter GoogleScholar ID", placeholder = "OmIonF8AAAAJ", value = "OmIonF8AAAAJ"),
+     #              actionButton("go", "Go"),
+     #              uiOutput("slider"),
+     #              
+     #              downloadButton(outputId = "downloadCloud", "Save image"),
+     #              width = 2,
+     #              NULL
+     #            ),
+     #            # Show a plot of the generated wordcloud
+     #            mainPanel(
+     #              verticalLayout(
+     #                plotOutput(outputId = "WordCloudPlot")
+     #              )
+     #            )
+     #          )
+     # )
      
    )
 )
@@ -173,7 +173,12 @@ server <- function(input, output) {
 #  profile <- get_profile(id)
   output$slider <- renderUI({
     range <- dat()$year
-    sliderInput(inputId = "yearRange", label = "Years", min = min(range), max = max(range), value = c(min(range),max(range)),step = 1)
+    sliderInput(inputId = "yearRange",
+                label = "Years",
+                min = min(range),
+                max = max(range),
+                value = c(min(range), max(range)),
+                step = 1)
   })
   
   plotInput <- function() {
@@ -274,12 +279,12 @@ server <- function(input, output) {
     contentType = "text/csv"
   )
   
-  Generate_WordCloud <- reactive({
-    
-  })
-  output$WordcloudPlot <- renderPlot(height = 600, {
-    plotInput()
-  })
+  # Generate_WordCloud <- reactive({
+  #   
+  # })
+  # output$WordcloudPlot <- renderPlot(height = 600, {
+  #   plotInput()
+  # })
 }
 
 # Run the application 
