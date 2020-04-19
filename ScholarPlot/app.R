@@ -251,7 +251,7 @@ server <- function(input, output) {
     papersTable <- papers()
     current_year <- as.integer(format(Sys.Date(), "%Y"))
     papersTable$ImpactFactor <- get_impactfactor(papersTable$journal, max.distance = 0.20)$ImpactFactor
-
+    
     papersTable$citesPerYear <- ifelse(papersTable$year != current_year, papersTable$cites/(current_year - papersTable$year), papersTable$cites)
     
     papersTable$PaperScore <- papersTable$citesPerYear + papersTable$ImpactFactor
