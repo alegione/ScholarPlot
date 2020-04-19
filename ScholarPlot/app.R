@@ -68,24 +68,7 @@ ui <- fluidPage(
                  )
                )
              )
-    ),
-    tabPanel(title = "WordCloud",
-             sidebarLayout(
-               sidebarPanel(
-                 
-                 downloadButton(outputId = "downloadCloud", "Save image"),
-                 width = 2,
-                 NULL
-               ),
-               # Show a plot of the generated wordcloud
-               mainPanel(
-                 verticalLayout(
-                   plotOutput(outputId = "WordCloudPlot")
-                 )
-               )
-             )
     )
-    
   )
 )
 
@@ -283,42 +266,6 @@ server <- function(input, output) {
     },
     contentType = "text/csv"
   )
-  
-  # Below function to get abstracts from publications
-  get_abstract <- function(id, publication) {
-    abstract  <- ""
-    url_template <- "http://scholar.google.com/citations?view_op=view_citation&citation_for_view=%s:%s"
-    url <- sprintf(url_template, id, publication)
-    url1 <- get_scholar_resp(url) %>%
-      read_html
-    abstract <- as.character(rvest::html_node(url1,".gsh_csp") %>% rvest::html_text())
-    return(abstract)
-  }
-  
-  concat_abstract <- function(id, publication, text){
-    textnew <- cat(text, get_abstract(id = id, publication = publication))
-  }
-  
-  Generate_WordCloud <- reactive({
-    p <- papers()
-    remove(text1)
-    text1 <- NULL
-    for (i in p$pubid) {
-      abstract_tmp <- get_abstract(id = input$scholarId, publication = i)
-      Sys.sleep(1)
-      if (is.null(text1)) {
-        text1 <- abstract_tmp
-      } else {
-        text1 <- cat(text1, abstract_tmp)
-      }
-    }
-    lapply(id, p$pubid, concat_abstract)
-    
-  }) 
-  
-  output$WordcloudPlot <- renderPlot(height = 600, {
-    Generate_WordCloud()
-  })
 }
 
 # Run the application 
