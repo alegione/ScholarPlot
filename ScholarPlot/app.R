@@ -284,6 +284,21 @@ server <- function(input, output) {
     contentType = "text/csv"
   )
   
+  # Below function to get abstracts from publications
+  get_abstract <- function(id, publication) {
+    abstract  <- ""
+    url_template <- "http://scholar.google.com/citations?view_op=view_citation&citation_for_view=%s:%s"
+    url <- sprintf(url_template, id, publication)
+    url1 <- get_scholar_resp(url) %>%
+      read_html
+    abstract <- as.character(rvest::html_node(url1,".gsh_csp") %>% rvest::html_text())
+    return(abstract)
+  }
+  
+  concat_abstract <- function(id, publication, text){
+    textnew <- cat(text, get_abstract(id = id, publication = publication))
+  }
+  
   Generate_WordCloud <- reactive({
     p <- papers()
     remove(text1)
@@ -297,26 +312,12 @@ server <- function(input, output) {
         text1 <- cat(text1, abstract_tmp)
       }
     }
-  })
-  # Below function to get abstracts from publications
-  get_abstract <- function(id, publication) {
-    abstract  <- ""
-    url_template <- "http://scholar.google.com/citations?view_op=view_citation&citation_for_view=%s:%s"
-    url <- sprintf(url_template, id, publication)
-    url1 <- get_scholar_resp(url) %>%
-      read_html
-    abstract <- as.character(rvest::html_node(url1,".gsh_csp") %>% rvest::html_text())
-    return(abstract)
-  }
-  concat_abstract <- function(id, publication, text){
-    textnew <- cat(text, get_abstract(id = id, publication = publication))
-  }
-  lapply(id, p$pubid, concat_abstract)
-  
-  
+    lapply(id, p$pubid, concat_abstract)
+    
+  }) 
   
   output$WordcloudPlot <- renderPlot(height = 600, {
-    plotInput()
+    Generate_WordCloud()
   })
 }
 

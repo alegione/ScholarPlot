@@ -1,8 +1,17 @@
+#list of packages required
+list.of.packages <- c("tidyverse", "scholar", "NLP", "RColorBrewer", "tm", "wordcloud", "qdap", "readtext", "xml2", "rvest")
 
-library(scholar)
-library(tidyverse)
-library(lubridate)
+#checking missing packages from list
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 
+#install missing ones
+if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+
+### Load packages
+for (i in list.of.packages) {
+  print(i)
+  library(i, character.only = TRUE)
+}
 #Alistair Legione Scholar ID: OmIonF8AAAAJ
 
 id <- "OmIonF8AAAAJ"
@@ -163,5 +172,36 @@ for (i in 1:nrow(p)) {
     ggtitle(p$title[i])
 }
 
+
+# Below function to get abstracts from publications
+get_abstract <- function(id, publication) {
+  abstract  <- ""
+  url_template <- "http://scholar.google.com/citations?view_op=view_citation&citation_for_view=%s:%s"
+  url <- sprintf(url_template, id, publication)
+  url1 <- get_scholar_resp(url) %>%
+    read_html
+  abstract <- as.character(rvest::html_node(url1,".gsh_csp") %>% rvest::html_text())
+  return(abstract)
+}
+
+concat_abstract <- function(id, publication, text){
+  textnew <- cat(text, get_abstract(id = id, publication = publication))
+}
+
+Generate_WordCloud <- reactive({
+  p <- get_publications(id = id)
+  remove(text1)
+  text1 <- NULL
+  for (i in p$pubid) {
+    abstract_tmp <- get_abstract(id = id, publication = i)
+    Sys.sleep(1)
+    if (is.null(text1)) {
+      text1 <- abstract_tmp
+    } else {
+      text1 <- cat(text1, abstract_tmp)
+    }
+  }
+  lapply(id, p$pubid, concat_abstract)
+}) 
 
 
