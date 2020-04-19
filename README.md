@@ -1,4 +1,4 @@
-# ScholarPlot 
+# ScholarPlot
 
 ## What is it?
 ScholarPlot is an R Shiny tool for visualising and exporting your google scholar data.
@@ -16,11 +16,28 @@ Below is an example of the ScholarPlot output of bioinformatics wizard Heng Li (
 
 ![Heng Li ScholarPlot Example](/images/ScholarPlotHengLi.jpg)
 
+Plots and tables can be exported separately. Years of publication can be adjusted for the plot, these don't as of yet affect the table output.
+
+## Run your own local version
+
+You can run 'ScholarPlot' on your own computer.
+
+To run, start by installing the programming language [R](https://cran.rstudio.com/) and the GUI interface [RStudio](https://rstudio.com/products/rstudio/download/)
+
+Then run the below commands in the Rstudio console
+```R
+install.package('shiny')
+library(shiny)
+runGitHub("ScholarPlot", "alegione")
+```
+
+This will download and run the Shiny application locally
+
+## To Do List
+- Word cloud pulling frequent terms from paper abstracts
+- Convert output table to sortable DT type table for easy ordering by year, citations, first author, etc.
+- Option for Papers/Year or Citations/Year or Both, rather than merging by default
+
+
+## Thanks/References
 The tool leans on the fantastic 'Scholar' package by Yu et al (https://cran.r-project.org/web/packages/scholar/)
-
-Unfortunately google appears to block scaping data when this tool is loaded onto the web (e.g. at shinyapps.io).
-
-Therefore, you'll need to copy the script locally and launch it in Rstudio to use it.
-
-Just download, open in Rstudio, and click the 'Run App' button
-
