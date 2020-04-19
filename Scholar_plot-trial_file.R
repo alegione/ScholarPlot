@@ -3,14 +3,9 @@ library(scholar)
 library(tidyverse)
 library(lubridate)
 
-#Alistair: OmIonF8AAAAJ
-#Mauricio: pPYRgUAAAAAJ
-#Nadeeka: iiDz-skAAAAJ
-#Jo D: b_0bnnoAAAAJ
-#Paola: 4bkOEhEAAAAJ
-#Glenn: jg0S8-wAAAAJ
-#Simon: z9_YatsAAAAJ
-id <- "jg0S8-wAAAAJ"
+#Alistair Legione Scholar ID: OmIonF8AAAAJ
+
+id <- "OmIonF8AAAAJ"
 nToday <- yday(Sys.time())
 ct <- get_citation_history(id)
 ct$citesPerMonth <- ct$cites/12
