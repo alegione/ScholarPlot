@@ -27,7 +27,7 @@ To run, start by installing the programming language [R](https://cran.rstudio.co
 
 Then run the below commands in the Rstudio console
 ```R
-install.package('shiny')
+install.packages('shiny')
 library(shiny)
 runGitHub("ScholarPlot", "alegione")
 ```
