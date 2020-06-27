@@ -12,9 +12,9 @@ for (i in list.of.packages) {
   print(i)
   library(i, character.only = TRUE)
 }
-#Alistair Legione Scholar ID: OmIonF8AAAAJ
+#Alistair Legione Scholar ID: rW9T5f4AAAAJ
 
-id <- "OmIonF8AAAAJ"
+id <- "rW9T5f4AAAAJ"
 nToday <- yday(Sys.time())
 ct <- get_citation_history(id)
 ct$citesPerMonth <- ct$cites/12
