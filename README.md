@@ -8,7 +8,7 @@ If you go to your scholar profile, your individual ID can be found as part of th
 
 ![Example URL](https://github.com/alegione/ScholarPlot/blob/master/ScholarPlot/images/ExampleURL.jpg)
 
-In the above example, my user ID is highlighted (i.e. *OmIonF8AAAAJ*).
+In the above example, my user ID is highlighted (i.e. *rW9T5f4AAAAJ*).
 
 The current primary output is a plot of papers per year and citations per year, a secondary output is a table of the publications of the author to date, ordered by 'Paper Score': A custom metric that aims to take into account impact factor of the journal and the number of citations per year of the manuscript itself. This can be helpful for applications that ask for you to provide your 'top 10 papers'.
 
