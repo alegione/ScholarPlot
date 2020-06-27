@@ -12,83 +12,85 @@ list.of.packages <- c("tidyverse", "scholar", "NLP", "RColorBrewer", "tm", "word
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 
 #install missing ones
-if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+if(length(new.packages)) {
+  install.packages(new.packages, dependencies = TRUE)
+} 
 
 ### Load packages
 for (i in list.of.packages) {
   print(i)
   library(i, character.only = TRUE)
-  }
+}
 
 
 # Define UI for application
 ui <- fluidPage(
   
-   # Application title
-   titlePanel("ScholarPlot: visualise your research output"),
-   
-   # Sidebar with a slider input for number of bins 
-   tabsetPanel(
-     tabPanel(title = "Citations", 
-       sidebarLayout(
-          sidebarPanel(
-            textInput(inputId = "scholarId",
-                      label = "Enter GoogleScholar ID",
-                      placeholder = "OmIonF8AAAAJ",
-                      value = "OmIonF8AAAAJ"),
-            actionButton(inputId = "go", label = "Go"),
-            uiOutput(outputId = "slider"),
-            
-            downloadButton(outputId = "downloadPlot", "Save image"),
-            downloadButton(outputId = "downloadtable", "Save table"),
-            width = 2,
-            NULL
-          ),
-          # Show a plot of the generated distribution
-          mainPanel(
-            verticalLayout(
-             plotOutput(outputId = "CitationPlot")
-            ),
-             verticalLayout(
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               br(),
-               tableOutput(outputId = "MetricsTable"),
-               #textOutput(outputId = "TextTest"),
-               NULL
+  # Application title
+  titlePanel("ScholarPlot: visualise your research output"),
+  
+  # Sidebar with a slider input for number of bins 
+  tabsetPanel(
+    tabPanel(title = "Citations", 
+             sidebarLayout(
+               sidebarPanel(
+                 textInput(inputId = "scholarId",
+                           label = "Enter GoogleScholar ID",
+                           placeholder = "rW9T5f4AAAAJ",
+                           value = "rW9T5f4AAAAJ"),
+                 actionButton(inputId = "go", label = "Go"),
+                 uiOutput(outputId = "slider"),
+                 
+                 downloadButton(outputId = "downloadPlot", "Save image"),
+                 downloadButton(outputId = "downloadtable", "Save table"),
+                 width = 2,
+                 NULL
+               ),
+               # Show a plot of the generated distribution
+               mainPanel(
+                 verticalLayout(
+                   plotOutput(outputId = "CitationPlot")
+                 ),
+                 verticalLayout(
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   br(),
+                   tableOutput(outputId = "MetricsTable"),
+                   #textOutput(outputId = "TextTest"),
+                   NULL
+                 )
+               )
              )
-          )
-        )
-      ),
-     tabPanel(title = "WordCloud",
-              sidebarLayout(
-                sidebarPanel(
-                  
-                  downloadButton(outputId = "downloadCloud", "Save image"),
-                  width = 2,
-                  NULL
-                ),
-                # Show a plot of the generated wordcloud
-                mainPanel(
-                  verticalLayout(
-                    plotOutput(outputId = "WordCloudPlot")
-                  )
-                )
-              )
-     )
-     
-   )
+    ),
+    tabPanel(title = "WordCloud",
+             sidebarLayout(
+               sidebarPanel(
+                 
+                 downloadButton(outputId = "downloadCloud", "Save image"),
+                 width = 2,
+                 NULL
+               ),
+               # Show a plot of the generated wordcloud
+               mainPanel(
+                 verticalLayout(
+                   plotOutput(outputId = "WordCloudPlot")
+                 )
+               )
+             )
+    )
+    
+  )
 )
-   
+
 
 
 
@@ -115,7 +117,7 @@ server <- function(input, output) {
   #   print(ct)
   #   }
   # )
-
+  
   getid <- eventReactive(input$go,{
     (input$scholarId)
   })
@@ -123,9 +125,9 @@ server <- function(input, output) {
   citations <- reactive({
     print("get citations")
     get_citation_history(getid())
-
+    
   })
-
+  
   papers <- reactive({
     print("get publications")
     
@@ -143,14 +145,14 @@ server <- function(input, output) {
   
   dat <- reactive({
     print("get data")
-
+    
     ct <- citations()
     print(ct)
-
+    
     p <- papers()
-
+    
     p <- p[complete.cases(p$year),]
-
+    
     papersPerYear <- as.data.frame(x = table(p$year),
                                    stringsAsFactors = FALSE
     )
@@ -158,16 +160,16 @@ server <- function(input, output) {
     papersPerYear$year <- as.numeric(as.character(papersPerYear$year))
     ct <- full_join(x = ct, y = papersPerYear, by = c("year"))
     ct <- arrange(ct, year)
-
+    
     ct[is.na(ct)] <- 0
-
+    
     ct$sum <- cumsum(ct$Freq)
-
+    
     ct
   })
- 
-#  IMF <- get_impactfactor(journals = p$journal, max.distance = 0.2)
-#  profile <- get_profile(id)
+  
+  #  IMF <- get_impactfactor(journals = p$journal, max.distance = 0.2)
+  #  profile <- get_profile(id)
   output$slider <- renderUI({
     range <- dat()$year
     sliderInput(inputId = "yearRange", label = "Years", min = min(range), max = max(range), value = c(min(range),max(range)),step = 1)
@@ -184,7 +186,7 @@ server <- function(input, output) {
     
     transform <- round(x = max(plotdata$cites)/max(plotdata$Freq) * (2/3), digits = 0)
     
-
+    
     ggplot(data = plotdata) +
       geom_col(aes(x = year, y = Freq * transform), fill = "White", colour = "black", size = 1) + 
       # geom_line(aes(x = year, y = citesPerYear), size = 2, colour = "Purple", linetype = 2) +
@@ -234,11 +236,11 @@ server <- function(input, output) {
       ggsave(file, plot = plotInput(), device = "jpeg", width = 11.69, height = 8.27)
     }
   )
-    
+  
   output$CitationPlot <- renderPlot(height = 600, {
     plotInput()
   })
-    
+  
   Generate_MetricsTable <- reactive({
     if (is.null(dat())) {
       return()
@@ -246,7 +248,11 @@ server <- function(input, output) {
     papersTable <- papers()
     current_year <- as.integer(format(Sys.Date(), "%Y"))
     papersTable$ImpactFactor <- get_impactfactor(papersTable$journal, max.distance = 0.20)$ImpactFactor
+<<<<<<< HEAD:ScholarPlot/app.R
+    
+=======
 
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
     papersTable$citesPerYear <- ifelse(papersTable$year != current_year, papersTable$cites/(current_year - papersTable$year), papersTable$cites)
     
     papersTable$PaperScore <- papersTable$citesPerYear + papersTable$ImpactFactor
@@ -256,15 +262,24 @@ server <- function(input, output) {
     papersTable$year <- sprintf('%1i', papersTable$year)
     
     CiteTable <- filter(papersTable, PaperScore > 0) %>%
+<<<<<<< HEAD:ScholarPlot/app.R
+      arrange(desc(PaperScore)) %>%
+      select(-cid, -pubid)
+=======
         arrange(desc(PaperScore)) %>%
         select(-cid, -pubid)
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
     
     (CiteTable <- add_column(.data = CiteTable, Rank = 1:nrow(CiteTable), .before = "title") %>%
         plyr::rename(c("Rank" = "Rank", "title" = "Title", "author" = "Authors", "journal" = "Journal", "number" = "Issue", "cites" = "Citations", "year" = "Year", "ImpactFactor" = "Impact Factor", "citesPerYear" = "Annual Citations", "PaperScore" = "Paper Score"))
     )
     
     
+<<<<<<< HEAD:ScholarPlot/app.R
+  })
+=======
     })
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   
   
   output$MetricsTable <- renderTable({
@@ -288,11 +303,19 @@ server <- function(input, output) {
       Sys.sleep(1)
       if (is.null(text1)) {
         text1 <- abstract_tmp
+<<<<<<< HEAD:ScholarPlot/app.R
+      } else {
+        text1 <- cat(text1, abstract_tmp)
+      }
+    }
+  })
+=======
         } else {
         text1 <- cat(text1, abstract_tmp)
         }
       }
    })
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   # Below function to get abstracts from publications
   get_abstract <- function(id, publication) {
     abstract  <- ""
@@ -307,8 +330,13 @@ server <- function(input, output) {
     textnew <- cat(text, get_abstract(id = id, publication = publication))
   }
   lapply(id, p$pubid, concat_abstract)
+<<<<<<< HEAD:ScholarPlot/app.R
+  
+  
+=======
     
     
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   
   output$WordcloudPlot <- renderPlot(height = 600, {
     plotInput()
