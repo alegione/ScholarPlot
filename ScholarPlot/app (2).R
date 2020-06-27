@@ -36,8 +36,8 @@ ui <- fluidPage(
                sidebarPanel(
                  textInput(inputId = "scholarId",
                            label = "Enter GoogleScholar ID",
-                           placeholder = "OmIonF8AAAAJ",
-                           value = "OmIonF8AAAAJ"),
+                           placeholder = "rW9T5f4AAAAJ",
+                           value = "rW9T5f4AAAAJ"),
                  actionButton(inputId = "go", label = "Go"),
                  uiOutput(outputId = "slider"),
                  
@@ -248,7 +248,11 @@ server <- function(input, output) {
     papersTable <- papers()
     current_year <- as.integer(format(Sys.Date(), "%Y"))
     papersTable$ImpactFactor <- get_impactfactor(papersTable$journal, max.distance = 0.20)$ImpactFactor
+<<<<<<< HEAD:ScholarPlot/app.R
     
+=======
+
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
     papersTable$citesPerYear <- ifelse(papersTable$year != current_year, papersTable$cites/(current_year - papersTable$year), papersTable$cites)
     
     papersTable$PaperScore <- papersTable$citesPerYear + papersTable$ImpactFactor
@@ -258,15 +262,24 @@ server <- function(input, output) {
     papersTable$year <- sprintf('%1i', papersTable$year)
     
     CiteTable <- filter(papersTable, PaperScore > 0) %>%
+<<<<<<< HEAD:ScholarPlot/app.R
       arrange(desc(PaperScore)) %>%
       select(-cid, -pubid)
+=======
+        arrange(desc(PaperScore)) %>%
+        select(-cid, -pubid)
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
     
     (CiteTable <- add_column(.data = CiteTable, Rank = 1:nrow(CiteTable), .before = "title") %>%
         plyr::rename(c("Rank" = "Rank", "title" = "Title", "author" = "Authors", "journal" = "Journal", "number" = "Issue", "cites" = "Citations", "year" = "Year", "ImpactFactor" = "Impact Factor", "citesPerYear" = "Annual Citations", "PaperScore" = "Paper Score"))
     )
     
     
+<<<<<<< HEAD:ScholarPlot/app.R
   })
+=======
+    })
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   
   
   output$MetricsTable <- renderTable({
@@ -290,11 +303,19 @@ server <- function(input, output) {
       Sys.sleep(1)
       if (is.null(text1)) {
         text1 <- abstract_tmp
+<<<<<<< HEAD:ScholarPlot/app.R
       } else {
         text1 <- cat(text1, abstract_tmp)
       }
     }
   })
+=======
+        } else {
+        text1 <- cat(text1, abstract_tmp)
+        }
+      }
+   })
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   # Below function to get abstracts from publications
   get_abstract <- function(id, publication) {
     abstract  <- ""
@@ -309,8 +330,13 @@ server <- function(input, output) {
     textnew <- cat(text, get_abstract(id = id, publication = publication))
   }
   lapply(id, p$pubid, concat_abstract)
+<<<<<<< HEAD:ScholarPlot/app.R
   
   
+=======
+    
+    
+>>>>>>> 4427697685dae76292d17dd837b65a6a9067e3da:ScholarPlot/app (2).R
   
   output$WordcloudPlot <- renderPlot(height = 600, {
     plotInput()
