@@ -12,7 +12,9 @@ list.of.packages <- c("tidyverse", "scholar", "NLP", "RColorBrewer", "tm", "word
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 
 #install missing ones
-if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+if(length(new.packages)) {
+  install.packages(new.packages, dependencies = TRUE)
+} 
 
 ### Load packages
 for (i in list.of.packages) {
