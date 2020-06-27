@@ -34,8 +34,8 @@ ui <- fluidPage(
                sidebarPanel(
                  textInput(inputId = "scholarId",
                            label = "Enter GoogleScholar ID",
-                           placeholder = "OmIonF8AAAAJ",
-                           value = "OmIonF8AAAAJ"),
+                           placeholder = "rW9T5f4AAAAJ",
+                           value = "rW9T5f4AAAAJ"),
                  actionButton(inputId = "go", label = "Go"),
                  uiOutput(outputId = "slider"),
                  
