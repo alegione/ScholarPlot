@@ -12,7 +12,15 @@ for (i in list.of.packages) {
   print(i)
   library(i, character.only = TRUE)
 }
-#Alistair Legione Scholar ID: rW9T5f4AAAAJ
+
+# APCAH Staff
+# Alistair Legione Scholar ID: OmIonF8AAAAJ
+# Mauricio Coppo: pPYRgUAAAAAJ
+# Nadeeka Wawegama: iiDz-skAAAAJ
+# Joanne Devlin: b_0bnnoAAAAJ
+# Paola Vaz: 4bkOEhEAAAAJ
+# Glenn Browning: jg0S8-wAAAAJ
+# Simon Firestone: z9_YatsAAAAJ
 
 id <- "rW9T5f4AAAAJ"
 nToday <- yday(Sys.time())

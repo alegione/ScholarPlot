@@ -1,7 +1,7 @@
 # ScholarPlot
 # A tool to visualise a GoogleScholar profile
 # https://github.com/alegione/ScholarPlot
-#
+# Working Version
 
 
 
