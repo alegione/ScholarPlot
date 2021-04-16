@@ -6,7 +6,7 @@
 
 
 #list of packages required
-list.of.packages <- c("tidyverse", "scholar", "NLP", "RColorBrewer", "tm", "wordcloud", "qdap", "readtext", "xml2", "rvest")
+list.of.packages <- c("tidyverse", "scholar", "NLP", "RColorBrewer", "tm", "wordcloud", "qdap", "readtext", "xml2", "rvest", "bslib")
 
 #checking missing packages from list
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
