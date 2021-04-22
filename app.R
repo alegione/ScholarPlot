@@ -174,12 +174,12 @@ server <- function(input, output) {
     
     
     ggplot(data = plotdata) +
-      geom_col(aes(x = year, y = Freq * transform), fill = "White", colour = "black", size = 1) + 
+      geom_col(aes(x = year, y = Freq * transform), fill = "White", colour = "Blue", size = 1) + 
       # geom_line(aes(x = year, y = citesPerYear), size = 2, colour = "Purple", linetype = 2) +
       geom_line(aes(x = year, y = cites), size = 2, colour = "Grey") + 
       geom_point(aes(x = year, y = cites), size = 4, colour = "Black") +
       #  geom_point(aes(x = year, y = citesPerYear), size = 4, colour = "Black") +
-      ylab("Annual Citations") + 
+      ylab("Annual Citations - Grey Line") + 
       #  ggtitle("Dr Alistair Legione") +
       xlab("Year") +
       theme_bw() +
@@ -194,7 +194,7 @@ server <- function(input, output) {
             axis.title.y.right = element_text(margin = margin(t = 0, r = 10, b = 0, l = 10)),
             axis.text.y = element_text(face = "bold", size = 12, colour = "Black")) +
       scale_x_continuous(breaks = c(seq(from = min(plotdata$year), to = max(plotdata$year, by = 1)))) + 
-      scale_y_continuous(sec.axis = sec_axis(trans = ~. / transform, name = "Annual Papers")) + 
+      scale_y_continuous(sec.axis = sec_axis(trans = ~. / transform, name = "Annual Papers - Blue Columns")) + 
       ggtitle(label = paste0(titleInfo[1], " - Citations: ", titleInfo[3], ", h-index: ", titleInfo[4], ", i10-index: ", titleInfo[5]), subtitle = paste("Data accessed:", format(Sys.Date(), "%b %d %Y"))) +
       #scale_colour_manual("", breaks = c("Citations_per_year", "Projected_citations"), values = c("Citations_per_year" = "Cyan", "Projected_citations" = "Purple")) +
       NULL
