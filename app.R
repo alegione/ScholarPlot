@@ -1,7 +1,7 @@
 # app.R ####
-# =============================================================================
+# =============================================================================#
 # ScholarPlot - Shiny Application
-# =============================================================================
+# =============================================================================#
 # This script was developed with assistance from Anthropic's Claude (Sonnet)
 # via the Spark interface, building on the original ScholarPlot tool by
 # Alistair Legione (https://github.com/alegione/ScholarPlot).
@@ -15,13 +15,13 @@
 #   3. Journal Quartiles   — stacked bar by SJR best quartile
 #   4. Research Profile    — areas, categories, word cloud, network
 #   5. Glossary            — definitions of all metrics and columns
-# =============================================================================
+# =============================================================================#
 
 source("global.R")
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════#
 # UI ####
-# ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════#
 
 ui <- fluidPage(
   
@@ -31,7 +31,7 @@ ui <- fluidPage(
   tabsetPanel(
     
     # Tab 1: Publications Table ####
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------#
     # The primary output table. Each row is one publication from Google
     # Scholar, enriched with SJR journal metrics where a match was found.
     # Users can hide individual rows from all downstream plots and outputs
@@ -53,6 +53,59 @@ ui <- fluidPage(
             inputId = "go",
             label   = "Fetch Data",
             class   = "btn-primary"
+          ),
+          
+          hr(),
+          
+          # Full author list option
+          # Exposed as a checkbox so the user can opt in to the slower but
+          # more complete author fetching process. A warning is shown to
+          # set expectations about the time required.
+          h5("Author list options"),
+          checkboxInput(
+            inputId = "fetchFullAuthors",
+            label   = "Fetch complete author lists",
+            value   = FALSE
+          ),
+          conditionalPanel(
+            condition = "input.fetchFullAuthors == true",
+            tags$div(
+              style = paste(
+                "background:#fff3cd;",
+                "border:1px solid #ffc107;",
+                "border-radius:4px;",
+                "padding:8px;",
+                "margin-bottom:8px;",
+                "font-size:12px;"
+              ),
+              tags$b("Note: "),
+              "Fetching complete author lists requires one web request per
+               paper and may take several minutes for large publication
+               lists. Google Scholar rate limiting may cause additional
+               delays. A CrossRef lookup is attempted as a fallback for
+               any papers where the author list remains truncated."
+            ),
+            # Optional CrossRef polite pool email
+            # Providing an email gives access to higher request rate limits
+            # from the CrossRef API. Left blank, the default anonymous rate
+            # limit applies (approximately 1 request per second).
+            textInput(
+              inputId     = "crossrefEmail",
+              label       = "CrossRef contact email (optional)",
+              placeholder = "your.email@institution.edu",
+              value       = ""
+            ),
+            tags$p(
+              style = "font-size:11px; color:#666;",
+              "Providing an email address registers your requests with the ",
+              tags$a(
+                "CrossRef polite pool",
+                href   = "https://github.com/CrossRef/rest-api-doc#etiquette",
+                target = "_blank"
+              ),
+              " for higher rate limits. Your email is sent only to CrossRef
+               and is not stored by this application."
+            )
           ),
           
           hr(),
@@ -114,7 +167,7 @@ ui <- fluidPage(
     ),
     
     # Tab 2: Citations & Papers ####
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------#
     # Dual-axis plot of citations and papers per year (or cumulative).
     # Each series has its own yearly/cumulative toggle and show/hide checkbox
     # so they can be displayed independently in any combination.
@@ -169,7 +222,7 @@ ui <- fluidPage(
     ),
     
     # Tab 3: Journal Quartiles ####
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------#
     # Stacked bar chart showing the number of publications per year broken
     # down by the best SJR quartile of the journal. Preprints and unmatched
     # journals are excluded. Year range is independently adjustable.
@@ -201,7 +254,7 @@ ui <- fluidPage(
     ),
     
     # Tab 4: Research Profile ####
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------#
     # Visualisations of the researcher's field of expertise derived from the
     # SJR subject classifications of their matched journals, and from the
     # text of their paper titles and abstracts.
@@ -331,7 +384,7 @@ ui <- fluidPage(
     ),
     
     # Tab 5: Glossary ####
-    # -------------------------------------------------------------------------
+    # -------------------------------------------------------------------------#
     # Definitions of all metrics and columns used throughout the app,
     # including how composite scores are calculated and why they are useful.
     tabPanel(
@@ -581,17 +634,17 @@ ui <- fluidPage(
 ) # end fluidPage
 
 # SERVER ####
-# =============================================================================
+# =============================================================================#
 # The server function receives input values from the UI, performs reactive
 # computations, and sends rendered outputs back to the UI. All reactive
 # expressions are defined here — they only re-execute when their dependencies
 # change, which avoids redundant API calls to Google Scholar.
-# =============================================================================
+# =============================================================================#
 
 server <- function(input, output, session) {
   
   # SJR data loader reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Loads the SJR tibble either from a user-uploaded file or from the
   # remote/local fallback chain defined in load_sjr_data() in global.R.
   # Re-runs if the user uploads a new file during the session.
@@ -605,7 +658,7 @@ server <- function(input, output, session) {
   })
   
   # Scholar ID reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Captures the Google Scholar ID from the text input only when the
   # Fetch Data button is clicked. eventReactive prevents the app from
   # attempting to fetch data before the user has confirmed their ID.
@@ -614,7 +667,7 @@ server <- function(input, output, session) {
   })
   
   # Raw citation history reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Fetches the per-year citation counts for the author from Google Scholar.
   # Returns a data frame with columns: year, cites.
   citations <- reactive({
@@ -623,7 +676,7 @@ server <- function(input, output, session) {
   })
   
   # Raw publications reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Fetches the full list of publications for the author from Google Scholar.
   # Returns a data frame with one row per publication.
   papers <- reactive({
@@ -632,7 +685,7 @@ server <- function(input, output, session) {
   })
   
   # Author profile details reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Fetches the author's profile summary from Google Scholar, including
   # their name, affiliation, total citations, h-index, and i10-index.
   # Stored as a named list for easy reference throughout the server.
@@ -648,8 +701,127 @@ server <- function(input, output, session) {
     )
   })
   
+  # Full author list reactive ####
+  # -------------------------------------------------------------------------#
+  # Only runs when the user has opted in via the fetchFullAuthors checkbox.
+  # If the checkbox is unchecked, returns the original truncated author
+  # strings immediately without making any web requests.
+  #
+  # When opted in, attempts two-stage author retrieval:
+  #   Stage 1 — scholar::get_complete_authors()
+  #   Stage 2 — CrossRef fallback for still-truncated results
+  #
+  # If a CrossRef email is provided it is set via options() before the first
+  # CrossRef request and cleared afterwards to avoid persisting between
+  # sessions.
+  full_authors <- reactive({
+    req(papers(), getid())
+    
+    pubs <- papers()
+    id   <- getid()
+    
+    # Return original author strings immediately if opt-in is not selected
+    if (!isTRUE(input$fetchFullAuthors)) {
+      return(pubs$author)
+    }
+    
+    # Set CrossRef polite pool email if provided by the user
+    # Store the previous value so it can be restored after fetching
+    prev_email <- getOption("rcrossref.email", default = NULL)
+    email_input <- trimws(input$crossrefEmail)
+    
+    if (nchar(email_input) > 0) {
+      options(rcrossref.email = email_input)
+    }
+    
+    # Ensure the CrossRef email option is restored when this reactive exits,
+    # whether it exits normally or due to an error
+    on.exit({
+      if (is.null(prev_email)) {
+        options(rcrossref.email = NULL)
+      } else {
+        options(rcrossref.email = prev_email)
+      }
+    }, add = TRUE)
+    
+    # Initialise result vector with original author strings as fallback
+    result <- pubs$author
+    
+    # Open progress bar
+    progress <- shiny::Progress$new()
+    on.exit(progress$close(), add = TRUE)
+    progress$set(
+      message = "Fetching full author lists...",
+      detail  = "This may take several minutes for large publication lists.",
+      value   = 0
+    )
+    
+    for (i in seq_len(nrow(pubs))) {
+      
+      # Update progress indicator with current paper title
+      progress$set(
+        value  = i / nrow(pubs),
+        detail = paste0(
+          "Paper ", i, " of ", nrow(pubs), ": ",
+          substr(pubs$title[i], 1, 40),
+          if (nchar(pubs$title[i]) > 40) "..." else ""
+        )
+      )
+      
+      # ── Stage 1: scholar::get_complete_authors() ──────────────────────────
+      # Scrapes the individual Google Scholar page for this publication to
+      # retrieve the full author list as displayed by Scholar
+      stage1_result <- tryCatch(
+        scholar::get_complete_authors(id, pubs$pubid[i]),
+        error   = function(e) pubs$author[i],
+        warning = function(w) pubs$author[i]
+      )
+      
+      # Treat NULL, empty, or whitespace-only results as failures
+      if (is.null(stage1_result)        ||
+          length(stage1_result) == 0    ||
+          trimws(stage1_result) == "") {
+        stage1_result <- pubs$author[i]
+      }
+      
+      # Polite delay after each Scholar request
+      Sys.sleep(0.5)
+      
+      # ── Stage 2: CrossRef fallback ─────────────────────────────────────────
+      # Only attempted if Stage 1 result still appears truncated
+      if (is_truncated_authors(stage1_result)) {
+        
+        progress$set(
+          value  = i / nrow(pubs),
+          detail = paste0(
+            "Paper ", i, " of ", nrow(pubs),
+            " (CrossRef fallback)..."
+          )
+        )
+        
+        stage2_result <- fetch_authors_crossref(
+          title            = pubs$title[i],
+          fallback_authors = stage1_result
+        )
+        
+        # Polite delay after CrossRef request
+        Sys.sleep(1)
+        
+        result[i] <- stage2_result
+        
+      } else {
+        result[i] <- stage1_result
+      }
+    }
+    
+    result
+  })
+  
+  
+  
+  
   # Merged yearly citation and paper count data reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Combines the citation history with a per-year paper count derived from
   # the publications list. The result is a single data frame with one row
   # per year containing both citation and paper counts, plus cumulative
@@ -685,7 +857,7 @@ server <- function(input, output, session) {
   })
   
   # Enriched publications reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # The central data reactive for the app. Takes the raw Google Scholar
   # publications, renames columns for consistency, calculates derived
   # metrics, runs the SJR fuzzy matching, and adds composite scores.
@@ -735,6 +907,23 @@ server <- function(input, output, session) {
       matched$SJR.Best.Quartile == "Q4" ~ 4L,
       TRUE ~ NA_integer_
     )
+    
+    # Replace truncated author strings with full author lists ####
+    # -----------------------------------------------------------------------
+    # full_authors() is a separate reactive that fetches complete author data
+    # via Scholar and CrossRef. It returns a character vector of the same
+    # length as the publications tibble. We check that the lengths match
+    # before replacing to guard against any edge case where the two reactives
+    # return different row counts (e.g. if papers() changes mid-session).
+    fa <- tryCatch(
+      full_authors(),
+      error = function(e) NULL
+    )
+    
+    if (!is.null(fa) && length(fa) == nrow(matched)) {
+      matched$author <- fa
+    }
+    
     
     # Convert impact factor from European decimal format (comma) to numeric.
     # Citations.per.Doc.2years is the SJR field representing the average
@@ -790,7 +979,7 @@ server <- function(input, output, session) {
   })
   
   # Hidden rows tracker ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Maintains a reactive vector of pubid values for rows the user has chosen
   # to hide. Hidden rows are excluded from all plots and the download but
   # remain in the session so they can be restored. Uses reactiveVal so it
@@ -816,7 +1005,7 @@ server <- function(input, output, session) {
   })
   
   # Visible papers reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Returns enriched_papers() with hidden rows removed. All plots and the
   # download handler use this reactive rather than enriched_papers() directly
   # so that hiding a row propagates consistently everywhere.
@@ -833,7 +1022,7 @@ server <- function(input, output, session) {
   })
   
   # Dynamic year slider: Citations & Papers tab ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Rendered after data is fetched so the min/max range reflects the actual
   # span of the author's publication history.
   output$slider <- renderUI({
@@ -883,7 +1072,7 @@ server <- function(input, output, session) {
   })
   
   # Profile summary strip ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Renders a summary bar above the publications table showing the author's
   # name, affiliation, and key Google Scholar metrics.
   output$profileSummary <- renderUI({
@@ -899,7 +1088,7 @@ server <- function(input, output, session) {
   })
   
   # Publications DT table ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Renders the interactive publications table using the DT package.
   # Displays visible papers only (hidden rows are excluded).
   # Columns are selected, converted, and renamed before passing to DT.
@@ -1015,7 +1204,7 @@ server <- function(input, output, session) {
   })
   
   # Download handler: Publications table ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Saves the visible (non-hidden) enriched publications as a TSV file.
   # The filename follows the YYYY-MM-DD-Firstname-Surname-OutputType.ext
   # convention defined in make_export_filename() in global.R.
@@ -1035,7 +1224,7 @@ server <- function(input, output, session) {
   )
   
   # Citations & Papers plot builder ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Builds the dual-axis plot of citations and papers over time.
   # Papers are the primary (left) axis rendered as blue columns.
   # Citations are the secondary (right) axis rendered as a grey line.
@@ -1191,7 +1380,7 @@ server <- function(input, output, session) {
     }
   )
   # Q-value plot builder ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Builds the stacked bar chart of publications per year by SJR best
   # quartile. Preprints and hidden rows are excluded before plotting.
   # A complete year x quartile grid is constructed before counting to
@@ -1362,7 +1551,7 @@ server <- function(input, output, session) {
   )
   
   # Research Profile: year-filtered publications reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Filters the visible (non-hidden) enriched publications by the year range
   # selected in the Research Profile tab slider. All profile views (bar
   # charts, word cloud, network) draw from this reactive so the year filter
@@ -1381,7 +1570,7 @@ server <- function(input, output, session) {
   })
   
   # Abstract fetcher ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Attempts to retrieve the abstract for each publication via the scholar
   # package. get_publication_abstract() can return NULL, a zero-length
   # vector, or NA when an abstract is unavailable (e.g. the paper is not
@@ -1421,7 +1610,7 @@ server <- function(input, output, session) {
   })
   
   # Word frequency reactive ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Tokenises the selected text source (titles, abstracts, or both) after
   # applying the profile year filter. Returns a frequency-sorted tibble of
   # words and counts for use by the word cloud renderer.
@@ -1453,7 +1642,7 @@ server <- function(input, output, session) {
   })
   
   # Research Profile plot builder ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Builds one of four views depending on input$profileView:
   #   "areas"      — horizontal bar chart of broad SJR research areas
   #   "categories" — horizontal bar chart of SJR subject categories
@@ -1691,7 +1880,7 @@ server <- function(input, output, session) {
   )
   
   # Word cloud renderer ####
-  # -------------------------------------------------------------------------
+  # -------------------------------------------------------------------------#
   # Renders the interactive wordcloud2 HTML widget. Word size is
   # proportional to frequency. Colours cycle through the Dark2 palette.
   # The widget supports hover tooltips natively — hovering over a word
@@ -1721,8 +1910,8 @@ server <- function(input, output, session) {
   
 } # end server
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════#
 # Launch application ####
-# ══════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════#
 shinyApp(ui = ui, server = server)
 

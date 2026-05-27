@@ -38,7 +38,8 @@ list.of.packages <- c(
   "igraph",       # graph/network data structures
   "ggraph",       # ggplot2-based network visualisation
   "tidytext",     # tidy text mining tools
-  "stopwords"     # stop word lists for text cleaning
+  "stopwords",    # stop word lists for text cleaning
+  "rcrossref"     # CrossRef API for full author list fallback
 )
 
 # Identify packages not yet installed
@@ -101,7 +102,7 @@ normalise_str <- function(x) {
 }
 
 # Preprint detection helper ####
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------- #
 # Returns TRUE if the normalised journal name matches any known preprint
 # server. Uses partial matching (grepl) so that strings like
 # "biorxiv preprint" or "posted on arxiv" are also caught.
@@ -113,7 +114,7 @@ is_preprint <- function(journal_name_norm) {
 }
 
 # SJR data loader with year-aware fallback ####
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------- #
 # Attempts to load the SJR tibble in the following order:
 #   1. User-uploaded file (if provided via the app's file input)
 #   2. Remote .rda for the current year (e.g. sjr_tibble_2025.rda)
@@ -181,6 +182,80 @@ load_sjr_data <- function(local_path = NULL) {
     "Please upload an sjr_tibble_YYYY.rda file via the app sidebar."
   ))
 }
+
+# Author list truncation detector ####
+# -----------------------------------------------------------------------------
+# Google Scholar truncates long author lists with "..." or similar markers.
+# This function returns TRUE if the author string appears to be truncated,
+# indicating that a full author lookup should be attempted.
+# Common truncation patterns include:
+#   "Smith J, Jones B, ..."
+#   "Smith J, Jones B, et al"
+#   "Smith J, Jones B, … "  (unicode ellipsis)
+is_truncated_authors <- function(author_string) {
+  if (is.na(author_string) || author_string == "") return(FALSE)
+  grepl(
+    pattern = "(\\.\\.\\.)|( et al\\.?$)|\u2026",
+    x       = author_string,
+    ignore.case = TRUE
+  )
+}
+
+# CrossRef full author fetcher ####
+# -----------------------------------------------------------------------------
+# Queries the CrossRef API using the paper title and first author as search
+# terms. Returns a formatted author string if a match is found, or NULL if
+# the lookup fails or returns no usable author data.
+# CrossRef rate limit: ~1 request/second without an API key. A polite email
+# address can be set via options(rcrossref.email = "you@example.com") to
+# access the polite pool with higher limits.
+fetch_authors_crossref <- function(title, fallback_authors) {
+  
+  query_result <- tryCatch(
+    rcrossref::cr_works(
+      query = title,
+      limit = 1
+    )$data,
+    error   = function(e) NULL,
+    warning = function(w) NULL
+  )
+  
+  # Return fallback if CrossRef returned nothing
+  if (is.null(query_result) || nrow(query_result) == 0) {
+    return(fallback_authors)
+  }
+  
+  authors_raw <- tryCatch(
+    query_result$author[[1]],
+    error = function(e) NULL
+  )
+  
+  # Return fallback if no author data in the CrossRef record
+  if (is.null(authors_raw) || nrow(authors_raw) == 0) {
+    return(fallback_authors)
+  }
+  
+  # Build "Given Family" strings, handling cases where either part is missing
+  author_strings <- mapply(
+    function(given, family) {
+      given  <- if (is.na(given)  || given  == "") "" else trimws(given)
+      family <- if (is.na(family) || family == "") "" else trimws(family)
+      trimws(paste(given, family))
+    },
+    authors_raw$given,
+    authors_raw$family,
+    SIMPLIFY = TRUE
+  )
+  
+  # Filter out any empty strings that result from missing name components
+  author_strings <- author_strings[nchar(author_strings) > 0]
+  
+  if (length(author_strings) == 0) return(fallback_authors)
+  
+  paste(author_strings, collapse = ", ")
+}
+
+
 
 # Fuzzy journal matching with confidence scoring ####
 # -----------------------------------------------------------------------------
